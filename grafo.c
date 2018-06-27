@@ -26,8 +26,16 @@ noh imprimeVert(noh aux, int ares) {
 		return aux;
 	vertice v = (vertice) aux->cont;
 	if (!SIMPLIFICADO) {
-		if (!ares)
-			printf("  %s [tipo=%s]\n", v->nome,v->tipo);
+		if (!ares) {
+			printf("  %s [rotulo=", v->nome);
+			for (noh aux2 = v->rotulo->ini; aux2 != NULL; aux2 = aux2->prox) {
+				int* r = (int*) aux2->cont;
+				printf("%d", *r);
+				if (aux2->prox != NULL)
+					printf(",");
+			}
+			printf("]\n");
+		}
 		if (ares)
 			imprimeAres(v->vizinhos->ini,v);
 	} else {
@@ -75,11 +83,11 @@ grafo criaGrafo(char *nome, long dir, long vert, long ares) {
 //------------------------------------------------------------------------------
 // cria um novo vertice alocando memória e definindo suas variáveis
 
-vertice criaVert(char *nome, long grau, char *tipo) {
+vertice criaVert(char *nome, long grau) {
   vertice vert = malloc(sizeof(struct vertice));
   vert->nome = nome;
   vert->grau = grau;
-  vert->tipo = tipo;
+  vert->rotulo = iniciaLista();
   vert->vizinhos = iniciaLista();
   return vert;
 }
@@ -103,9 +111,9 @@ aresta criaAres(vertice v, long peso) {
 
 void insereVert(Agraph_t *g, grafo gr) {
 	if (TEST) printf("------------------------------------------\n");
-  for(Agnode_t *v = agfstnode(g); v; v = agnxtnode(g,v)) {  	
-      vertice vert = criaVert(agnameof(v),agcountuniqedges(g,v,1,1),agget(v,(char*)"tipo"));
-			if (TEST) printf("Aloca vertice: %s com grau: %ld do tipo: %s\n", vert->nome, vert->grau, vert->tipo);
+  for(Agnode_t *v = agfstnode(g); v; v = agnxtnode(g,v)) {
+      vertice vert = criaVert(agnameof(v),agcountuniqedges(g,v,1,1));
+			if (TEST) printf("Aloca vertice: %s com grau: %ld\n", vert->nome, vert->grau);
 			insereLista(gr->vert, vert);			
 			if (TEST) printf("------------------------------------------\n");					
 	}
@@ -118,7 +126,7 @@ void constroiViz(Agraph_t *g, grafo gr) {
 	for(Agnode_t *v = agfstnode(g); v; v = agnxtnode(g,v)) {
 		if (TEST) printf("------------------------------------------\n");
 		if (TEST) printf("Construindo vizinhança do %s\n", agnameof(v));
-		for (Agedge_t *a = agfstedge(g, v); a; a = agnxtedge(g, a, v)) {
+		for (Agedge_t *a = agfstout(g, v); a; a = agnxtout(g, a)) {
 			Agnode_t *tail = NULL;
 			Agnode_t *head = NULL;
 
@@ -126,17 +134,8 @@ void constroiViz(Agraph_t *g, grafo gr) {
 			head = aghead(a);
 			// printf("Tail: %s Head: %s\n", agnameof(tail), agnameof(head));
 
-			vertice auxTail = NULL;
-			vertice auxHead = NULL;
-      
-			char tipo = agget(v,(char*)"tipo")[0];
-			if (tipo == 'c') {
-				auxTail = procuraVert(gr->vert,agnameof(tail));
-				auxHead = procuraVert(gr->vert,agnameof(head));
-			} else if (tipo == 'p') {
-				auxTail = procuraVert(gr->vert,agnameof(head));
-				auxHead = procuraVert(gr->vert,agnameof(tail));
-			}
+			vertice auxTail = procuraVert(gr->vert,agnameof(tail));
+			vertice auxHead = procuraVert(gr->vert,agnameof(head));
 
 			// printf("Achou tail: %s Achou head: %s\n", auxTail->nome, auxHead->nome);
 
@@ -241,6 +240,111 @@ int destroiGrafo(grafo g) {
 	liberaLista(g->vert);
 	free(g);
   return 0;
+}
+
+//------------------------------------------------------------------------------
+// MÉTODOS DE COLORAÇÃO
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// devolve um número entre 0 e o número de vertices de g
+
+unsigned int cor(vertice v, grafo g) {
+	return 0;
+}
+
+//------------------------------------------------------------------------------
+// preenche o vetor v (presumidamente um vetor com n_vertices(g)
+// posições) com os vértices de g ordenados de acordo com uma busca em
+// largura lexicográfica sobre g a partir de r e devolve v
+
+vertice *buscaLexicografica(grafo g, vertice *v) {
+	if (TEST) printf("------------------------------------------\n");
+	lista conjuntoVertices = copiaLista(g->vert);
+	if (TEST) imprimeConjunto(conjuntoVertices);
+	vertice r = (vertice) conjuntoVertices->ini->cont;
+	insereLista(r->rotulo,&(g->v));
+	if (TEST) printf("inicia %s com rotulo %ld\n", r->nome, g->v);
+
+	while(conjuntoVertices->tam > 0) {
+		vertice maior = buscaMaiorRotulo(conjuntoVertices);
+		if (TEST) imprimeConjunto(conjuntoVertices);
+		for (noh aux = maior->vizinhos->ini; aux != NULL; aux = aux->prox) {
+			aresta a = (aresta) aux->cont;
+			insereLista(a->vert->rotulo,&(conjuntoVertices->tam));
+			if (TEST) printf("inserido em %s o rotulo %ld\n", a->vert->nome, conjuntoVertices->tam);
+		}
+	}
+	return v;
+}
+
+void imprimeConjunto(lista conjuntoVertices) {
+	printf("conjuntoVertices=[");
+	for(noh aux = conjuntoVertices->ini; aux != NULL; aux = aux->prox) {
+		vertice r = (vertice) aux->cont;
+		printf("%s", r->nome);
+		if (aux->prox != NULL)
+			printf(",");
+	}
+	printf("] | tamanho=%ld\n", conjuntoVertices->tam);
+}
+
+vertice buscaMaiorRotulo(lista conjuntoVertices) {
+	noh maiorNo = conjuntoVertices->ini;
+	vertice maior = (vertice) maiorNo->cont;
+	if (TEST) printf("inicia maior como %s e tam do conj=%ld\n", maior->nome, conjuntoVertices->tam);
+	if (conjuntoVertices->tam > 1) {
+		printf("entrou\n");
+		for (noh aux = conjuntoVertices->ini->prox; aux != NULL; aux = aux->prox) {
+			vertice comp = (vertice) aux->cont;
+			if (TEST) printf("compara %s com %s\n", comp->nome, maior->nome);
+			if (comparaRotulo(comp->rotulo,maior->rotulo) > 0) {
+				if (TEST) printf("%s é maior que %s\n", comp->nome, maior->nome);
+				maiorNo = aux;
+				maior = comp;
+			}
+		}
+	}
+	printf("aqui\n");
+	removeListaEspec(conjuntoVertices,maiorNo);
+	if (TEST) printf("%s é o maior e foi removido\n", maior->nome);
+	return maior;
+}
+
+int comparaRotulo(lista r1, lista r2) {
+	if (r1->tam == 0)
+		return -1;
+	noh aux1 = r1->ini;
+	noh aux2 = r2->ini;
+	while(aux1 != NULL || aux2 != NULL) {
+		if (aux1 == NULL)
+				return 1;
+			else
+				return -1;
+		int *i = (int*) aux1->cont;
+		int *j = (int*) aux1->cont;
+		if (*i > *j)
+			return 1;
+		else if (*i < *j)
+			return -1;
+		else {
+			aux1 = aux1->prox;
+			aux2 = aux2->prox;
+		}
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------------
+// colore os vértices de g de maneira "gulosa" segundo a ordem dos
+// vértices em v e devolve o número de cores utilizado
+//
+// ao final da execução,
+//     1. cor(v,g) > 0 para todo vértice de g
+//     2. cor(u,g) != cor(v,g), para toda aresta {u,v} de g
+
+unsigned int colore(grafo g, vertice *v) {
+	return 0;
 }
 
 //------------------------------------------------------------------------------

@@ -36,4 +36,10 @@ noh insereLista(lista l, void *cont);
 // remove nó do final da lista
 void removeLista(lista l);
 
+// remove nó específico da lista
+void removeListaEspec(lista l, noh aux);
+
+// copia o conteudo de uma lista
+lista copiaLista(lista l);
+
 #endif

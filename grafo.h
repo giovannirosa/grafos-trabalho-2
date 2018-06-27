@@ -33,11 +33,11 @@ struct grafo {
 };
 
 //------------------------------------------------------------------------------
-// vertice com identificador de tipo=consumidor/produto, nome, vizinhos e grau
+// vertice com rotulo=subconjunto de {1, ..., n}, nome, vizinhos e grau
 
 struct vertice {
 	char* nome;
-	char* tipo;
+	lista rotulo;
 	lista vizinhos;	
 	long grau;
 };
@@ -76,7 +76,7 @@ grafo criaGrafo(char *nome, long dir, long vert, long ares);
 //------------------------------------------------------------------------------
 // cria um novo vertice alocando memória e definindo suas variáveis
 
-vertice criaVert(char *nome, long grau, char *tipo);
+vertice criaVert(char *nome, long grau);
 
 //------------------------------------------------------------------------------
 // cria uma nova aresta alocando memória e definindo suas variáveis
@@ -159,7 +159,13 @@ unsigned int cor(vertice v, grafo g);
 // posições) com os vértices de g ordenados de acordo com uma busca em
 // largura lexicográfica sobre g a partir de r e devolve v
 
-vertice *buscaLexicografica(vertice r, grafo g, vertice *v);
+vertice *buscaLexicografica(grafo g, vertice *v);
+
+void imprimeConjunto(lista conjuntoVertices);
+
+vertice buscaMaiorRotulo(lista conjuntoVertices);
+
+int comparaRotulo(lista r1, lista r2);
 
 //------------------------------------------------------------------------------
 // colore os vértices de g de maneira "gulosa" segundo a ordem dos

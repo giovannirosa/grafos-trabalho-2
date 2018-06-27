@@ -66,3 +66,34 @@ void removeLista(lista l) {
   l->tam--;
   free(aux);
 }
+
+// remove nó específico da lista
+void removeListaEspec(lista l, noh aux) {
+  if (!aux)
+    return;
+
+  if (aux == l->ini && aux == l->fim) {
+    l->ini = NULL;
+    l->fim = NULL;
+  } else if (aux == l->ini) {
+    aux->prox->ant = NULL;
+    l->ini = aux->prox;
+  } else if (aux == l->fim) {
+    aux->ant->prox = NULL;
+    l->fim = aux->ant;
+  } else {
+    aux->prox->ant = aux->ant;
+    aux->ant->prox = aux->prox;
+  }
+
+  l->tam--;
+  free(aux);
+}
+
+// copia o conteudo de uma lista
+lista copiaLista(lista l) {
+  lista copia = iniciaLista();
+  for (noh aux = l->ini; aux != NULL; aux = aux->prox)
+    insereLista(copia,aux->cont);
+  return copia;
+}

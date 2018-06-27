@@ -6,15 +6,14 @@
 
 int main(void) {
 
-  grafo g = le_grafo(stdin);
+  grafo g = leGrafo(stdin);
 
-  if ( !g )
+  if (!g)
     return 1;
 
-  // int n = n_vertices(g);
+  long n = g->v;
 
-  // vertice *v = busca_lexicografica(vertice_de_nome((char *)"A", g), 
-  //                                  g, malloc((long unsigned int)n*sizeof(vertice)));
+  vertice *v = buscaLexicografica(g, malloc((long unsigned int)n*sizeof(vertice)));
 
   // printf("Foram usadas %d cores: ", colore(g, v));
 
@@ -24,9 +23,9 @@ int main(void) {
 
   // printf("%d\n\n", cor(v[penultimo], g));
 
-  escreve_grafo(stdout, g);
+  escreveGrafo(stdout, g);
 
-  // free(v);
+  free(v);
 
-  return !destroi_grafo(g);
+  return !destroiGrafo(g);
 }
