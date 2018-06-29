@@ -1,4 +1,5 @@
 strict graph "second" {
+  A [color="#992211"]
   A -- B
   A -- C
   A -- F

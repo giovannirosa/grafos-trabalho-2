@@ -38,6 +38,7 @@ struct grafo {
 struct vertice {
 	char* nome;
 	char* rotulo;
+	char* cor;
 	lista vizinhos;	
 	long grau;
 };
@@ -79,9 +80,17 @@ grafo criaGrafo(char *nome, long dir, long vert, long ares);
 vertice criaVert(char *nome, long grau);
 
 //------------------------------------------------------------------------------
+// copia um vertice existente alocando memória e definindo suas variáveis
+
+vertice copiaVert(char *nome, long grau, char* rotulo, lista vizinhos);
+lista copiaVertices(lista l);
+void adicionaRotulo(char *rotulo, long l);
+
+//------------------------------------------------------------------------------
 // cria uma nova aresta alocando memória e definindo suas variáveis
 
 aresta criaAres(vertice v, long peso);
+aresta copiaAres(vertice v, long peso);
 
 //------------------------------------------------------------------------------
 // insere os vertices ao grafo
@@ -163,7 +172,7 @@ vertice *buscaLexicografica(grafo g, vertice *v);
 
 void imprimeConjunto(lista conjuntoVertices);
 
-vertice buscaMaiorRotulo(lista conjuntoVertices, int remove);
+vertice buscaMaiorRotulo(lista conjuntoVertices);
 
 int comparaRotulo(lista r1, lista r2);
 
