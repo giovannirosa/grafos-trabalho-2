@@ -37,7 +37,7 @@ struct grafo {
 
 struct vertice {
 	char* nome;
-	lista rotulo;
+	char* rotulo;
 	lista vizinhos;	
 	long grau;
 };
@@ -163,7 +163,7 @@ vertice *buscaLexicografica(grafo g, vertice *v);
 
 void imprimeConjunto(lista conjuntoVertices);
 
-vertice buscaMaiorRotulo(lista conjuntoVertices);
+vertice buscaMaiorRotulo(lista conjuntoVertices, int remove);
 
 int comparaRotulo(lista r1, lista r2);
 
