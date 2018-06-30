@@ -13,7 +13,7 @@ int main(void) {
     return 1;
 
   // ordena vertices em ordem lexicográfica
-  char **v = buscaLexicografica(g, malloc(g->v*sizeof(char)));
+  char **v = buscaLexicografica(g, malloc((long unsigned int)g->v*sizeof(char)));
 
   // colore os vertices de acordo com a ordem
   colore(g, v);

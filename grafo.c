@@ -1,5 +1,29 @@
 #include "grafo.h"
 
+// vetor de cores hexadecimais HEX escolhidas para criar distancia visual
+static const char *HEX[22] = {"#00FF00",
+															"#FF0000",
+															"#0000FF",
+															"#FF00FF",
+															"#FFFF00",
+															"#00FFFF",
+															"#DDDDDD",
+															"#000000",
+															"#00000F",
+															"#000F00",
+															"#0F0000",
+															"#888888",
+															"#000088",
+															"#008800",
+															"#880000",
+															"#880088",
+															"#888800",
+															"#008888",
+															"#44DD57",
+															"#34FF88",
+															"#DDAA56",
+															"#B14512"};
+
 //------------------------------------------------------------------------------
 // MÉTODOS DE IMPRESSÃO - TESTE
 //------------------------------------------------------------------------------
@@ -32,7 +56,7 @@ noh imprimeVert(noh aux, int ares) {
 		if (ares)
 			imprimeAres(v->vizinhos->ini,v);
 	} else {
-		printf("  %s", v->nome);
+		printf("  %s[%s]", v->nome, v->cor);
 		if (ares)
 			imprimeAres(v->vizinhos->ini,v);
 		printf("\n");
@@ -243,37 +267,20 @@ int destroiGrafo(grafo g) {
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-// devolve um número entre 0 e o número de vertices de g
+// busca vertice pelo nome no grafo e devolve sua cor
 
-char* cor(char* vertNome, grafo g) {
+const char* cor(char* vertNome, grafo g) {
 	vertice vert = procuraVert(g->vert,vertNome);
 	return vert->cor;
 }
+
+//------------------------------------------------------------------------------
+// concatena um numero ao rotulo do vertice
 
 void adicionaRotulo(char *rotulo, long l) {
 	char str[10];
 	sprintf(str, "%ld", l);
 	strcat(rotulo,str);
-}
-
-lista copiaVertices(lista l) {
-  lista copia = iniciaLista();
-  for (noh aux = l->ini; aux != NULL; aux = aux->prox) {
-    vertice v = (vertice) aux->cont;
-    vertice vCopia = criaVert(v->nome,v->grau);
-    insereLista(copia,vCopia);
-  }
-  for (noh aux = l->ini; aux != NULL; aux = aux->prox) {
-    vertice v = (vertice) aux->cont;
-    vertice vertCopia = procuraVert(copia,v->nome);
-    for (noh aux2 = v->vizinhos->ini; aux2 != NULL; aux2 = aux2->prox) {
-      aresta a = (aresta) aux2->cont;
-      vertice vertViz = procuraVert(copia,a->vert->nome);
-      aresta aCopia = criaAres(vertViz,1);
-      insereLista(vertCopia->vizinhos,aCopia);
-    }
-  }
-  return copia;
 }
 
 //------------------------------------------------------------------------------
@@ -331,6 +338,9 @@ char **buscaLexicografica(grafo g, char **v) {
 	return v;
 }
 
+//------------------------------------------------------------------------------
+// caminha pelo grafo e zera os rótulos de todos os vertices
+
 void zeraRotulos(grafo g) {
 	for (noh aux = g->vert->ini; aux != NULL; aux = aux->prox) {
 		vertice v = (vertice) aux->cont;
@@ -338,6 +348,9 @@ void zeraRotulos(grafo g) {
 		v->rotulo = malloc(sizeof(char));
 	}
 }
+
+//------------------------------------------------------------------------------
+// imprime conjunto de vertices
 
 void imprimeConjunto(lista conjuntoVertices) {
 	printf("conjuntoVertices=[");
@@ -349,6 +362,9 @@ void imprimeConjunto(lista conjuntoVertices) {
 	}
 	printf("] | tamanho=%ld\n", conjuntoVertices->tam);
 }
+
+//------------------------------------------------------------------------------
+// busca maior rotulo entre todos os vertices do conjunto usando strcmp()
 
 vertice buscaMaiorRotulo(lista conjuntoVertices) {
 	noh maiorNo = conjuntoVertices->ini;
@@ -383,19 +399,19 @@ int colore(grafo g, char **v) {
 	for (int i = 0; i < g->v; i++) {
 		char *vertNome = v[i];
 		vertice vert = procuraVert(g->vert,vertNome);
-		char *c = garanteCor(vert,"#000000",0);
+		const char *c = garanteCor(vert,HEX[0],0);
 		vert->cor = c;
 		if (TEST) printf("assinada cor %s para vertice %s\n", c, vert->nome);
 	}
 
-	char** coresUsadas = malloc(sizeof(char));
+	const char** coresUsadas = malloc(sizeof(char));
 	coresUsadas[0] = malloc(7*sizeof(char));
 	vertice vert = (vertice) g->vert->ini->cont;
 	int count = 1;
 	coresUsadas[0] = vert->cor;
 	for (noh aux = g->vert->ini->prox; aux != NULL; aux = aux->prox) {
 		vert = (vertice) aux->cont;
-		char *cor = vert->cor;
+		const char *cor = vert->cor;
 		int achou = 0;
 		for (int i = 0; i < count; i++) {
 			if (strcmp(cor,coresUsadas[i]) == 0) {
@@ -410,20 +426,23 @@ int colore(grafo g, char **v) {
 		}
 	}
 
-	if (TEST || CORES) printf("Foram usadas %d cores distintas: ", count);
+	printf("//Foram usadas %d cores distintas: ", count);
 
-  if (TEST || CORES) {
-    for (int i = 0; i < count-1; i++)
-      printf("%s, ", coresUsadas[i]);
-		printf("%s\n\n", coresUsadas[count-1]);
-  }
+	for (int i = 0; i < count-1; i++)
+		printf("%s, ", coresUsadas[i]);
+	printf("%s\n", coresUsadas[count-1]);
 
 	free(coresUsadas);
 
 	return count;
 }
 
-char *garanteCor(vertice vert, const char *novaCor, int tentativa) {
+//------------------------------------------------------------------------------
+// garante que sera escolhida uma cor que nao é utilizada pelos vizinhos do
+// vertice de maneira recursiva, cada nova tentativa escolhe uma cor do
+// vetor de cores hexadecimais HEX definido no topo desse arquivo
+
+const char *garanteCor(vertice vert, const char *novaCor, int tentativa) {
 	for (noh aux = vert->vizinhos->ini; aux != NULL; aux = aux->prox) {
 		aresta ares = (aresta) aux->cont;
 		if (TEST) printf("compara [%s] com [%s]\n", ares->vert->cor,novaCor);

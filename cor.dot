@@ -1,20 +1,22 @@
+//Foram usadas 4 cores distintas: #0000FF, #FF0000, #00FF00, #FF00FF
 strict graph third {
-  A [color="#00FF00"]
-  B [color="#DDDDDD"]
-  F [color="#000000"]
-  C [color="#000000"]
-  E [color="#00FF00"]
-  D [color="#DDDDDD"]
-  G [color="#DDDDDD"]
-  H [color="#000000"]
-  I [color="#00FF00"]
-  J [color="#DDDDDD"]
+  A [color="#0000FF"]
+  B [color="#FF0000"]
+  F [color="#00FF00"]
+  C [color="#00FF00"]
+  E [color="#FF00FF"]
+  D [color="#FF0000"]
+  G [color="#0000FF"]
+  H [color="#00FF00"]
+  I [color="#0000FF"]
+  J [color="#FF0000"]
   A -- B 
   A -- F 
   B -- A 
   B -- F 
   B -- C 
   B -- E 
+  B -- G 
   F -- A 
   F -- B 
   F -- E 
@@ -25,10 +27,13 @@ strict graph third {
   E -- B 
   E -- F 
   E -- C 
+  E -- G 
   E -- D 
   D -- C 
   D -- E 
+  G -- B 
   G -- F 
+  G -- E 
   G -- H 
   H -- G 
   H -- I 

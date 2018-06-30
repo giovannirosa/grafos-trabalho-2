@@ -6,30 +6,7 @@
 #include "lista.h"
 
 static const int TEST = 0;
-static const int CORES = 1;
 static const int SIMPLIFICADO = 0;
-static const char *HEX[22] = {  "#000000",
-								"#DDDDDD",
-								"#00FF00",
-								"#FF0000",
-								"#0000FF",
-								"#FF00FF",
-								"#FFFF00",
-								"#00FFFF",
-								"#00000F",
-								"#000F00",
-								"#0F0000",
-								"#888888",
-								"#000088",
-								"#008800",
-								"#880000",
-								"#880088",
-								"#888800",
-								"#008888",
-								"#44DD57",
-								"#34FF88",
-								"#DDAA56",
-								"#B14512"};
 
 //------------------------------------------------------------------------------
 // (apontador para) estrutura de dados para representar um grafo
@@ -61,7 +38,7 @@ struct grafo {
 struct vertice {
 	char* nome;
 	char* rotulo;
-	char* cor;
+	const char* cor;
 	lista vizinhos;	
 	long grau;
 };
@@ -103,17 +80,9 @@ grafo criaGrafo(char *nome, long dir, long vert, long ares);
 vertice criaVert(char *nome, long grau);
 
 //------------------------------------------------------------------------------
-// copia um vertice existente alocando memória e definindo suas variáveis
-
-vertice copiaVert(char *nome, long grau, char* rotulo, lista vizinhos);
-lista copiaVertices(lista l);
-void adicionaRotulo(char *rotulo, long l);
-
-//------------------------------------------------------------------------------
 // cria uma nova aresta alocando memória e definindo suas variáveis
 
 aresta criaAres(vertice v, long peso);
-aresta copiaAres(vertice v, long peso);
 
 //------------------------------------------------------------------------------
 // insere os vertices ao grafo
@@ -143,11 +112,6 @@ aresta procuraAres(noh aux, vertice v);
 //         0, caso contrário
 
 int destroiGrafo(grafo g);
-
-//------------------------------------------------------------------------------
-// devolve o número de vértices de g
-
-int nVertices(grafo g);
 
 //------------------------------------------------------------------------------
 // devolve o vértice de nome 'nome' em g
@@ -182,9 +146,9 @@ grafo leGrafo(FILE *input);
 grafo escreveGrafo(grafo g);
 
 //------------------------------------------------------------------------------
-// devolve um número entre 0 e o número de vertices de g
+// busca vertice pelo nome no grafo e devolve sua cor
 
-char *cor(char *vertNome, grafo g);
+const char *cor(char *vertNome, grafo g);
 
 //------------------------------------------------------------------------------
 // preenche o vetor v (presumidamente um vetor com n_vertices(g)
@@ -193,11 +157,23 @@ char *cor(char *vertNome, grafo g);
 
 char **buscaLexicografica(grafo g, char **v);
 
+//------------------------------------------------------------------------------
+// imprime conjunto de vertices
+
 void imprimeConjunto(lista conjuntoVertices);
+
+//------------------------------------------------------------------------------
+// busca maior rotulo entre todos os vertices do conjunto usando strcmp()
 
 vertice buscaMaiorRotulo(lista conjuntoVertices);
 
-int comparaRotulo(lista r1, lista r2);
+//------------------------------------------------------------------------------
+// concatena um numero ao rotulo do vertice
+
+void adicionaRotulo(char *rotulo, long l);
+
+//------------------------------------------------------------------------------
+// caminha pelo grafo e zera os rótulos de todos os vertices
 
 void zeraRotulos(grafo g);
 
@@ -211,7 +187,12 @@ void zeraRotulos(grafo g);
 
 int colore(grafo g, char **v);
 
-char *garanteCor(vertice vert, const char *novaCor, int tentativa);
+//------------------------------------------------------------------------------
+// garante que sera escolhida uma cor que nao é utilizada pelos vizinhos do
+// vertice de maneira recursiva, cada nova tentativa escolhe uma cor do
+// vetor de cores hexadecimais HEX definido logo abaixo
+
+const char *garanteCor(vertice vert, const char *novaCor, int tentativa);
 
 //------------------------------------------------------------------------------
 #endif
