@@ -6,26 +6,21 @@
 
 int main(void) {
 
+  // monta grafo lendo entrada do stdin
   grafo g = leGrafo(stdin);
 
   if (!g)
     return 1;
 
-  long n = g->v;
+  // ordena vertices em ordem lexicográfica
+  char **v = buscaLexicografica(g, malloc(g->v*sizeof(char)));
 
-  vertice *v = buscaLexicografica(g, malloc((long unsigned int)n*sizeof(vertice)));
+  // colore os vertices de acordo com a ordem
+  colore(g, v);
 
-  // printf("Foram usadas %d cores: ", colore(g, v));
-
-  // int penultimo = n - 1;
-  // for (int i = 0; i < penultimo; i++)
-  //   printf("%d, ", cor(v[i], g));
-
-  // printf("%d\n\n", cor(v[penultimo], g));
-
-  escreveGrafo(stdout, g);
+  // escreve resultado do grafo colorido
+  escreveGrafo(g);
 
   free(v);
-
   return !destroiGrafo(g);
 }

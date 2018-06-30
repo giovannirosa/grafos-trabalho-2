@@ -27,15 +27,7 @@ noh imprimeVert(noh aux, int ares) {
 	vertice v = (vertice) aux->cont;
 	if (!SIMPLIFICADO) {
 		if (!ares) {
-			printf("  %s [rotulo=%s]\n", v->nome, v->rotulo);
-			// printf("  %s [rotulo=", v->nome);
-			// for (noh aux2 = v->rotulo->ini; aux2 != NULL; aux2 = aux2->prox) {
-			// 	int* r = (int*) aux2->cont;
-			// 	printf("%d", *r);
-			// 	if (aux2->prox != NULL)
-			// 		printf(",");
-			// }
-			// printf("]\n");
+			printf("  %s [color=\"%s\"]\n", v->nome, v->cor);
 		}
 		if (ares)
 			imprimeAres(v->vizinhos->ini,v);
@@ -57,9 +49,9 @@ noh imprimeAres(noh aux, vertice v) {
 		return aux;
 	aresta a = (aresta) aux->cont;
 	if (!SIMPLIFICADO) {
-		printf("  %s -- %s [label=%ld]\n", v->nome, a->vert->nome, a->peso);
+		printf("  %s -- %s \n", v->nome, a->vert->nome);
 	} else {
-		printf("->%s[%ld]", a->vert->nome, a->peso);
+		printf("->%s", a->vert->nome);
 	}
 	return imprimeAres(aux->prox,v);
 }
@@ -91,34 +83,6 @@ vertice criaVert(char *nome, long grau) {
   vert->rotulo = malloc(sizeof(char));
   vert->vizinhos = iniciaLista();
   return vert;
-}
-
-//------------------------------------------------------------------------------
-// copia um vertice existente alocando memória e definindo suas variáveis
-
-vertice copiaVert(char *nome, long grau, char* rotulo, lista vizinhos) {
-  vertice vert = malloc(sizeof(struct vertice));
-  vert->nome = nome;
-  vert->grau = grau;
-  vert->rotulo = rotulo;
-  // lista viziCopia = iniciaLista();
-  // for (noh aux = vizinhos->ini; aux != NULL; aux = aux->prox) {
-  //   aresta a = (aresta) aux->cont;
-  //   aresta aCopia = copiaAres(a->vert,a->peso);
-  //   insereLista(viziCopia,aCopia);
-  // }
-  vert->vizinhos = iniciaLista();
-  return vert;
-}
-
-//------------------------------------------------------------------------------
-// copia uma aresta existente alocando memória e definindo suas variáveis
-
-aresta copiaAres(vertice v, long peso) {
-  aresta ares = malloc(sizeof(struct aresta));
-  ares->vert = copiaVert(v->nome,v->grau,v->rotulo,v->vizinhos);
-  ares->peso = peso;
-  return ares;
 }
 
 //------------------------------------------------------------------------------
@@ -235,7 +199,6 @@ grafo leGrafo(FILE *input) {
 	constroiViz(g,gr);
   if (TEST) imprimeGrafo(gr);
 
-	agclose(g);
 	agfree(g,NULL);
   if (TEST) printf("Grafo lido.\n");
 
@@ -253,7 +216,7 @@ grafo leGrafo(FILE *input) {
 //         ou 
 //         NULL, em caso de erro 
 
-grafo escreveGrafo(FILE *output, grafo g) {
+grafo escreveGrafo(grafo g) {
   imprimeGrafo(g);
   return g;
 }
@@ -282,8 +245,9 @@ int destroiGrafo(grafo g) {
 //------------------------------------------------------------------------------
 // devolve um número entre 0 e o número de vertices de g
 
-unsigned int cor(vertice v, grafo g) {
-	return 0;
+char* cor(char* vertNome, grafo g) {
+	vertice vert = procuraVert(g->vert,vertNome);
+	return vert->cor;
 }
 
 void adicionaRotulo(char *rotulo, long l) {
@@ -317,17 +281,15 @@ lista copiaVertices(lista l) {
 // posições) com os vértices de g ordenados de acordo com uma busca em
 // largura lexicográfica sobre g a partir de r e devolve v
 
-vertice *buscaLexicografica(grafo g, vertice *v) {
-  // grafo g1 = leGrafo(stdin);
+char **buscaLexicografica(grafo g, char **v) {
 	if (TEST) printf("------------------------------------------\n");
 	lista conjuntoVertices = copiaLista(g->vert);
-  //copiaVertices(g->vert);
-  //copiaLista(g->vert);
 	if (TEST) imprimeConjunto(conjuntoVertices);
 	vertice r = (vertice) conjuntoVertices->ini->cont;
 	adicionaRotulo(r->rotulo,g->v);
 	if (TEST) printf("inicia %s com rotulo %ld\n", r->nome, g->v);
 
+	// primeira iteração para atribuir os rótulos
 	while(conjuntoVertices->tam > 0) {
 		vertice maior = buscaMaiorRotulo(conjuntoVertices);
 		if (TEST) imprimeConjunto(conjuntoVertices);
@@ -344,23 +306,37 @@ vertice *buscaLexicografica(grafo g, vertice *v) {
 	conjuntoVertices = copiaLista(g->vert);
 	if (TEST) imprimeConjunto(conjuntoVertices);
 
+	// segunda iteração para obter a ordem lexicográfica
 	int i = 0;
-	
 	while(conjuntoVertices->tam > 0) {
 		vertice maior = buscaMaiorRotulo(conjuntoVertices);
 		if (TEST) imprimeConjunto(conjuntoVertices);
-		v[i++] = maior;
+		v[i] = (char*) malloc(sizeof(maior->nome) / sizeof(char*));
+		v[i++] = maior->nome;
 	}
 
-	printf("v=[");
-	for (i = 0; i < g->v; i++) {
-		printf("%s", v[i]->nome);
-		if (i < g->v - 1)
-			printf(",");
+	if (TEST) {
+		printf("v=[");
+		for (i = 0; i < g->v; i++) {
+			printf("%s", v[i]);
+			if (i < g->v - 1)
+				printf(",");
+		}
+		printf("]\n");
 	}
-	printf("]\n");
+
+	// zera os rótulos para manter a consistencia
+	zeraRotulos(g);
 
 	return v;
+}
+
+void zeraRotulos(grafo g) {
+	for (noh aux = g->vert->ini; aux != NULL; aux = aux->prox) {
+		vertice v = (vertice) aux->cont;
+		free(v->rotulo);
+		v->rotulo = malloc(sizeof(char));
+	}
 }
 
 void imprimeConjunto(lista conjuntoVertices) {
@@ -392,7 +368,6 @@ vertice buscaMaiorRotulo(lista conjuntoVertices) {
 	removeListaEspec(conjuntoVertices,maiorNo);
 	if (TEST) printf("%s é o maior e foi removido\n", maior->nome);
 	if (TEST) printf("------------------------------------------\n");
-  // vertice copia = copiaVert(maior);
 	return maior;
 }
 
@@ -404,28 +379,61 @@ vertice buscaMaiorRotulo(lista conjuntoVertices) {
 //     1. cor(v,g) > 0 para todo vértice de g
 //     2. cor(u,g) != cor(v,g), para toda aresta {u,v} de g
 
-unsigned int colore(grafo g, vertice *v) {
-	int count = 0;
-
-  v[0]->cor = "#000000";
+int colore(grafo g, char **v) {
 	for (int i = 0; i < g->v; i++) {
-		vertice vert = v[i];
-		for (noh aux = vert->vizinhos->ini; aux != NULL; aux = aux->prox) {
-			aresta ares = (aresta) aux->cont;
-      if (ares->vert->cor == NULL) {
-        char *c = "#000000";
-        for (noh aux2 = ares->vert->vizinhos->ini; aux2 != NULL; aux2 = aux2->prox) {
-          aresta ares2 = (aresta) aux2->cont;
-          if (ares2->vert->cor == NULL && strcmp(ares->vert->cor,ares2->vert->cor) == 0) {
-            // c = c[]
-          }
-        }
-      }
+		char *vertNome = v[i];
+		vertice vert = procuraVert(g->vert,vertNome);
+		char *c = garanteCor(vert,"#000000",0);
+		vert->cor = c;
+		if (TEST) printf("assinada cor %s para vertice %s\n", c, vert->nome);
+	}
+
+	char** coresUsadas = malloc(sizeof(char));
+	coresUsadas[0] = malloc(7*sizeof(char));
+	vertice vert = (vertice) g->vert->ini->cont;
+	int count = 1;
+	coresUsadas[0] = vert->cor;
+	for (noh aux = g->vert->ini->prox; aux != NULL; aux = aux->prox) {
+		vert = (vertice) aux->cont;
+		char *cor = vert->cor;
+		int achou = 0;
+		for (int i = 0; i < count; i++) {
+			if (strcmp(cor,coresUsadas[i]) == 0) {
+				achou = 1;
+				break;
+			}
+		}
+		if (!achou) {
+			coresUsadas[count] = malloc(7*sizeof(char));
+			coresUsadas[count] = cor;
+			count++;
 		}
 	}
 
+	if (TEST || CORES) printf("Foram usadas %d cores distintas: ", count);
+
+  if (TEST || CORES) {
+    for (int i = 0; i < count-1; i++)
+      printf("%s, ", coresUsadas[i]);
+		printf("%s\n\n", coresUsadas[count-1]);
+  }
+
+	free(coresUsadas);
 
 	return count;
+}
+
+char *garanteCor(vertice vert, const char *novaCor, int tentativa) {
+	for (noh aux = vert->vizinhos->ini; aux != NULL; aux = aux->prox) {
+		aresta ares = (aresta) aux->cont;
+		if (TEST) printf("compara [%s] com [%s]\n", ares->vert->cor,novaCor);
+		if (ares->vert->cor != NULL && strcmp(ares->vert->cor,novaCor) == 0) {
+			tentativa++;
+			if (TEST) printf("cores iguais tentativa %d com nova cor %s\n",tentativa, HEX[tentativa]);
+			return garanteCor(vert,HEX[tentativa],tentativa);
+		}
+	}
+	return novaCor;
 }
 
 //------------------------------------------------------------------------------

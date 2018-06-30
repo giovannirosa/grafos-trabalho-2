@@ -5,8 +5,31 @@
 #include <graphviz/cgraph.h>
 #include "lista.h"
 
-static const int TEST = 1;
+static const int TEST = 0;
+static const int CORES = 1;
 static const int SIMPLIFICADO = 0;
+static const char *HEX[22] = {  "#000000",
+								"#DDDDDD",
+								"#00FF00",
+								"#FF0000",
+								"#0000FF",
+								"#FF00FF",
+								"#FFFF00",
+								"#00FFFF",
+								"#00000F",
+								"#000F00",
+								"#0F0000",
+								"#888888",
+								"#000088",
+								"#008800",
+								"#880000",
+								"#880088",
+								"#888800",
+								"#008888",
+								"#44DD57",
+								"#34FF88",
+								"#DDAA56",
+								"#B14512"};
 
 //------------------------------------------------------------------------------
 // (apontador para) estrutura de dados para representar um grafo
@@ -156,25 +179,27 @@ grafo leGrafo(FILE *input);
 //         ou 
 //         NULL, em caso de erro 
 
-grafo escreveGrafo(FILE *output, grafo g);
+grafo escreveGrafo(grafo g);
 
 //------------------------------------------------------------------------------
 // devolve um número entre 0 e o número de vertices de g
 
-unsigned int cor(vertice v, grafo g);
+char *cor(char *vertNome, grafo g);
 
 //------------------------------------------------------------------------------
 // preenche o vetor v (presumidamente um vetor com n_vertices(g)
 // posições) com os vértices de g ordenados de acordo com uma busca em
 // largura lexicográfica sobre g a partir de r e devolve v
 
-vertice *buscaLexicografica(grafo g, vertice *v);
+char **buscaLexicografica(grafo g, char **v);
 
 void imprimeConjunto(lista conjuntoVertices);
 
 vertice buscaMaiorRotulo(lista conjuntoVertices);
 
 int comparaRotulo(lista r1, lista r2);
+
+void zeraRotulos(grafo g);
 
 //------------------------------------------------------------------------------
 // colore os vértices de g de maneira "gulosa" segundo a ordem dos
@@ -184,7 +209,9 @@ int comparaRotulo(lista r1, lista r2);
 //     1. cor(v,g) > 0 para todo vértice de g
 //     2. cor(u,g) != cor(v,g), para toda aresta {u,v} de g
 
-unsigned int colore(grafo g, vertice *v);
+int colore(grafo g, char **v);
+
+char *garanteCor(vertice vert, const char *novaCor, int tentativa);
 
 //------------------------------------------------------------------------------
 #endif

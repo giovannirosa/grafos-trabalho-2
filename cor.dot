@@ -1,0 +1,40 @@
+strict graph third {
+  A [color="#00FF00"]
+  B [color="#DDDDDD"]
+  F [color="#000000"]
+  C [color="#000000"]
+  E [color="#00FF00"]
+  D [color="#DDDDDD"]
+  G [color="#DDDDDD"]
+  H [color="#000000"]
+  I [color="#00FF00"]
+  J [color="#DDDDDD"]
+  A -- B 
+  A -- F 
+  B -- A 
+  B -- F 
+  B -- C 
+  B -- E 
+  F -- A 
+  F -- B 
+  F -- E 
+  F -- G 
+  C -- B 
+  C -- E 
+  C -- D 
+  E -- B 
+  E -- F 
+  E -- C 
+  E -- D 
+  D -- C 
+  D -- E 
+  G -- F 
+  G -- H 
+  H -- G 
+  H -- I 
+  H -- J 
+  I -- H 
+  I -- J 
+  J -- H 
+  J -- I 
+}
